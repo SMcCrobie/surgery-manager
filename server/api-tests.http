@@ -1,0 +1,33 @@
+
+### Health Check
+GET {{baseUrl}}/health
+
+### Create Surgery
+POST {{baseUrl}}/api/surgeries
+Content-Type: application/json
+
+{
+  "dateTime": "2025-09-15T14:30:00.000Z",
+  "surgeryType": "Appendectomy",
+  "surgeon": "Dr. Sarah Johnson",
+  "patient": {
+    "name": "John Smith",
+    "birthdate": "1985-03-22T00:00:00.000Z",
+    "age": 40
+  },
+  "status": "scheduled"
+}
+
+> {%
+    client.global.set("surgeryId", response.body.surgery._id);
+%}
+
+### Get Specific Surgery Created Above
+GET {{baseUrl}}/api/surgeries/{{surgeryId}}
+
+### Cancel Specific Surgery Created Above
+PUT {{baseUrl}}/api/surgeries/{{surgeryId}}/cancel
+
+
+### Get Surgeries
+GET {{baseUrl}}/api/surgeries
