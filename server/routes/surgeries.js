@@ -22,6 +22,22 @@ router.post('/', async (req, res) => {
     }
 });
 
+router.put('/:id', async (req, res) => {
+    try {
+        const surgery = await Surgery.findByIdAndUpdate(
+            req.params.id,
+            req.body,
+            { new: true, runValidators: true }
+        );
+        if (!surgery) {
+            return res.status(404).json({ error: 'Surgery not found' });
+        }
+        res.json({ message: 'Surgery updated', surgery });
+    } catch (error) {
+        res.status(400).json({ error: error.message });
+    }
+});
+
 router.put('/:id/cancel', async (req, res) => {
     try {
         const surgery = await Surgery.findByIdAndUpdate(
