@@ -5,13 +5,13 @@ import 'dotenv/config';
 import surgeryRoutes from './routes/surgeries.js';
 
 const app = express();
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 3000;
 const MONGO_PORT = process.env.MONGO_PORT || '27017';
 const DATABASE_NAME = process.env.DATABASE_NAME || 'surgery-manager';
 const MONGODB_URI = `mongodb://localhost:${MONGO_PORT}/${DATABASE_NAME}`;
 
 // Middleware
-app.use(cors());
+app.use(cors());//would need to be configed for prod, fine for dev
 app.use(express.json());
 
 //Basic Health Check
