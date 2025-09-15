@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react';
+import { API_BASE_URL } from '../config/api';
 
 const SurgeryList = ({ onViewSurgery }) => {
     const [surgeries, setSurgeries] = useState([]);
 
     useEffect(() => {
-        fetch('http://localhost:3000/api/surgeries')
+        fetch(`${API_BASE_URL}/surgeries`)
             .then(response => response.json())
             .then(data => setSurgeries(data))
             .catch(error => console.error('Error:', error));

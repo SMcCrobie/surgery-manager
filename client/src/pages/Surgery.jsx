@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { API_BASE_URL } from '../config/api';
 
 const Surgery = ({ surgeryId, onBack }) => {
     const [surgery, setSurgery] = useState(null);
@@ -12,7 +13,7 @@ const Surgery = ({ surgeryId, onBack }) => {
     }, [surgeryId]);
 
     const fetchSurgery = () => {
-        fetch(`http://localhost:3000/api/surgeries/${surgeryId}`)
+        fetch(`${API_BASE_URL}/surgeries/${surgeryId}`)
             .then(response => response.json())
             .then(data => {
                 setSurgery(data);
@@ -49,7 +50,7 @@ const Surgery = ({ surgeryId, onBack }) => {
 
     const handleSave = async () => {
         try {
-            const response = await fetch(`http://localhost:3000/api/surgeries/${surgeryId}`, {
+            const response = await fetch(`${API_BASE_URL}/surgeries/${surgeryId}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
