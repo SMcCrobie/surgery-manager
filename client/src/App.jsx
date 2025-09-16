@@ -17,6 +17,11 @@ function App() {
         setSelectedSurgeryId(null);
     };
 
+    const handleAddSurgery = () => {
+        setSelectedSurgeryId('new');
+        setCurrentPage('surgery');
+    };
+
     return (
         <div className="App">
             <header className="app-header">
@@ -25,7 +30,8 @@ function App() {
 
             <main>
                 {currentPage === 'list' && (
-                    <SurgeryList onViewSurgery={handleViewSurgery} />
+                    <SurgeryList onViewSurgery={handleViewSurgery}
+                                 onAddSurgery={handleAddSurgery}/>
                 )}
                 {currentPage === 'surgery' && (
                     <Surgery

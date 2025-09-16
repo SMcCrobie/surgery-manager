@@ -5,21 +5,48 @@ const Surgery = ({ surgeryId, onBack }) => {
     const [surgery, setSurgery] = useState(null);
     const [originalSurgery, setOriginalSurgery] = useState(null);
     const [hasChanges, setHasChanges] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
+
+    const isNewSurgery = surgeryId === 'new';
+
+    // Default empty surgery for new surgeries
+    const getEmptySurgery = () => ({
+        surgeryType: '',
+        dateTime: new Date().toISOString(),
+        surgeon: '',
+        patient: {
+            name: '',
+            birthdate: '',
+            age: ''
+        },
+        status: 'scheduled'
+    });
 
     useEffect(() => {
-        if (surgeryId) {
+        if (surgeryId && surgeryId !== 'new') {
             fetchSurgery();
+        } else {
+            // Initialize with empty surgery for new surgery
+            const emptySurgery = getEmptySurgery();
+            setSurgery(emptySurgery);
+            setOriginalSurgery(emptySurgery);
+            setHasChanges(false);
         }
     }, [surgeryId]);
 
     const fetchSurgery = () => {
+        setIsLoading(true);
         fetch(`${API_BASE_URL}/surgeries/${surgeryId}`)
             .then(response => response.json())
             .then(data => {
                 setSurgery(data);
                 setOriginalSurgery(data);
+                setIsLoading(false);
             })
-            .catch(error => console.error('Error:', error));
+            .catch(error => {
+                console.error('Error:', error);
+                setIsLoading(false);
+            });
     };
 
     const handleInputChange = (field, value, isNested = false, nestedField = null) => {
@@ -49,9 +76,16 @@ const Surgery = ({ surgeryId, onBack }) => {
     };
 
     const handleSave = async () => {
+        setIsLoading(true);
         try {
-            const response = await fetch(`${API_BASE_URL}/surgeries/${surgeryId}`, {
-                method: 'PUT',
+            const url = isNewSurgery
+                ? `${API_BASE_URL}/surgeries`
+                : `${API_BASE_URL}/surgeries/${surgeryId}`;
+
+            const method = isNewSurgery ? 'POST' : 'PUT';
+
+            const response = await fetch(url, {
+                method: method,
                 headers: {
                     'Content-Type': 'application/json',
                 },
@@ -59,21 +93,35 @@ const Surgery = ({ surgeryId, onBack }) => {
             });
 
             if (!response.ok) {
-                throw new Error('Failed to update surgery');
+                throw new Error(`Failed to ${isNewSurgery ? 'create' : 'update'} surgery`);
             }
 
-            const updatedSurgery = await response.json();
-            setSurgery(updatedSurgery.surgery);
-            setOriginalSurgery(updatedSurgery.surgery);
-            setHasChanges(false);
+            const result = await response.json();
+
+            if (isNewSurgery) {
+                // For new surgery, just go back to the list
+                onBack();
+            } else {
+                // For existing surgery, update the local state
+                setSurgery(result.surgery);
+                setOriginalSurgery(result.surgery);
+                setHasChanges(false);
+            }
+
+            setIsLoading(false);
         } catch (error) {
             console.error('Error:', error);
+            setIsLoading(false);
         }
     };
 
     const handleCancel = () => {
-        setSurgery(originalSurgery);
-        setHasChanges(false);
+        if (isNewSurgery) {
+            onBack();
+        } else {
+            setSurgery(originalSurgery);
+            setHasChanges(false);
+        }
     };
 
     const formatDateTimeForInput = (dateString) => {
@@ -82,11 +130,12 @@ const Surgery = ({ surgeryId, onBack }) => {
     };
 
     const formatDateForInput = (dateString) => {
+        if (!dateString) return '';
         const date = new Date(dateString);
         return date.toISOString().slice(0, 10); // Format for date input
     };
 
-    if (!surgery) {
+    if (isLoading || (!isNewSurgery && !surgery)) {
         return <div>Loading surgery details...</div>;
     }
 
@@ -96,7 +145,7 @@ const Surgery = ({ surgeryId, onBack }) => {
                 ← Back to List
             </button>
 
-            <h2>Edit Surgery</h2>
+            <h2>{isNewSurgery ? 'Add New Surgery' : 'Edit Surgery'}</h2>
 
             <div style={{ border: '1px solid #ccc', padding: '2rem', borderRadius: '8px' }}>
                 <div style={{ marginBottom: '1rem', display: 'flex', alignItems: 'center' }}>
@@ -105,9 +154,10 @@ const Surgery = ({ surgeryId, onBack }) => {
                     </label>
                     <input
                         type="text"
-                        value={surgery.surgeryType}
+                        value={surgery?.surgeryType || ''}
                         onChange={(e) => handleInputChange('surgeryType', e.target.value)}
                         style={{ padding: '0.5rem', width: '300px', border: '1px solid #ddd', borderRadius: '4px' }}
+                        placeholder="Enter surgery type"
                     />
                 </div>
 
@@ -117,7 +167,7 @@ const Surgery = ({ surgeryId, onBack }) => {
                     </label>
                     <input
                         type="datetime-local"
-                        value={formatDateTimeForInput(surgery.dateTime)}
+                        value={surgery?.dateTime ? formatDateTimeForInput(surgery.dateTime) : ''}
                         onChange={(e) => handleInputChange('dateTime', new Date(e.target.value).toISOString())}
                         style={{ padding: '0.5rem', border: '1px solid #ddd', borderRadius: '4px' }}
                     />
@@ -129,9 +179,10 @@ const Surgery = ({ surgeryId, onBack }) => {
                     </label>
                     <input
                         type="text"
-                        value={surgery.surgeon}
+                        value={surgery?.surgeon || ''}
                         onChange={(e) => handleInputChange('surgeon', e.target.value)}
                         style={{ padding: '0.5rem', width: '300px', border: '1px solid #ddd', borderRadius: '4px' }}
+                        placeholder="Enter surgeon name"
                     />
                 </div>
 
@@ -141,9 +192,10 @@ const Surgery = ({ surgeryId, onBack }) => {
                     </label>
                     <input
                         type="text"
-                        value={surgery.patient?.name || ''}
+                        value={surgery?.patient?.name || ''}
                         onChange={(e) => handleInputChange('patient', e.target.value, true, 'name')}
                         style={{ padding: '0.5rem', width: '300px', border: '1px solid #ddd', borderRadius: '4px' }}
+                        placeholder="Enter patient name"
                     />
                 </div>
 
@@ -153,7 +205,7 @@ const Surgery = ({ surgeryId, onBack }) => {
                     </label>
                     <input
                         type="date"
-                        value={surgery.patient?.birthdate ? formatDateForInput(surgery.patient.birthdate) : ''}
+                        value={surgery?.patient?.birthdate ? formatDateForInput(surgery.patient.birthdate) : ''}
                         onChange={(e) => handleInputChange('patient', new Date(e.target.value).toISOString(), true, 'birthdate')}
                         style={{ padding: '0.5rem', border: '1px solid #ddd', borderRadius: '4px' }}
                     />
@@ -165,9 +217,10 @@ const Surgery = ({ surgeryId, onBack }) => {
                     </label>
                     <input
                         type="number"
-                        value={surgery.patient?.age || ''}
-                        onChange={(e) => handleInputChange('patient', parseInt(e.target.value), true, 'age')}
+                        value={surgery?.patient?.age || ''}
+                        onChange={(e) => handleInputChange('patient', parseInt(e.target.value) || '', true, 'age')}
                         style={{ padding: '0.5rem', width: '100px', border: '1px solid #ddd', borderRadius: '4px' }}
+                        placeholder="Age"
                     />
                 </div>
 
@@ -176,7 +229,7 @@ const Surgery = ({ surgeryId, onBack }) => {
                         <strong>Status:</strong>
                     </label>
                     <select
-                        value={surgery.status}
+                        value={surgery?.status || 'scheduled'}
                         onChange={(e) => handleInputChange('status', e.target.value)}
                         style={{ padding: '0.5rem', border: '1px solid #ddd', borderRadius: '4px' }}
                     >
@@ -185,38 +238,40 @@ const Surgery = ({ surgeryId, onBack }) => {
                         <option value="cancelled">Cancelled</option>
                     </select>
                 </div>
-
             </div>
+
             <div style={{ marginTop: '.5rem', minHeight:'3rem'}}>
-                {hasChanges && (
+                {(hasChanges || isNewSurgery) && (
                     <div style={{ display: 'flex', gap: '1rem' }}>
                         <button
                             onClick={handleSave}
+                            disabled={isLoading}
                             style={{
                                 padding: '0.75rem 1.5rem',
-                                backgroundColor: '#28a745',
+                                backgroundColor: isLoading ? '#6c757d' : '#28a745',
                                 color: 'white',
                                 border: 'none',
                                 borderRadius: '4px',
-                                cursor: 'pointer',
+                                cursor: isLoading ? 'not-allowed' : 'pointer',
                                 fontSize: '1rem'
                             }}
                         >
-                            Save Changes
+                            {isLoading ? 'Saving...' : (isNewSurgery ? 'Create Surgery' : 'Save Changes')}
                         </button>
                         <button
                             onClick={handleCancel}
+                            disabled={isLoading}
                             style={{
                                 padding: '0.75rem 1.5rem',
                                 backgroundColor: '#dc3545',
                                 color: 'white',
                                 border: 'none',
                                 borderRadius: '4px',
-                                cursor: 'pointer',
+                                cursor: isLoading ? 'not-allowed' : 'pointer',
                                 fontSize: '1rem'
                             }}
                         >
-                            Cancel Changes
+                            {isNewSurgery ? 'Cancel' : 'Cancel Changes'}
                         </button>
                     </div>
                 )}

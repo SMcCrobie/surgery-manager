@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { API_BASE_URL } from '../config/api';
 
-const SurgeryList = ({ onViewSurgery }) => {
+const SurgeryList = ({ onViewSurgery, onAddSurgery }) => {
     const [surgeries, setSurgeries] = useState([]);
 
     function fetchSurgeries() {
@@ -30,6 +30,19 @@ const SurgeryList = ({ onViewSurgery }) => {
     return (
         <div>
             <h2>Upcoming Surgeries</h2>
+            <button
+                onClick={() => onAddSurgery()}
+                style={{
+                    padding: '0.5rem 1rem',
+                    backgroundColor: '#007bff',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '4px',
+                    cursor: 'pointer'
+                }}
+            >
+               + Add Surgery
+            </button>
             {surgeries.map((surgery) => (
                 <div key={surgery._id} style={{ border: '1px solid #ccc', margin: '1rem', padding: '1rem' }}>
                     <h3>{surgery.surgeryType}</h3>

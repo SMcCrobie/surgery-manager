@@ -6,8 +6,8 @@ const surgerySchema = new mongoose.Schema({
     surgeon: { type: String, required: true },
     patient: {
         name: { type: String, required: true },
-        birthdate: { type: Date, required: true },
-        age: { type: Number, required: true }
+        birthdate: { type: Date},
+        age: { type: Number}
     },
     status: {
         type: String,
