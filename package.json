@@ -6,7 +6,7 @@
     "client": "cd client && npm run dev",
     "mongo:start": "docker-compose up -d mongodb && echo 'MongoDB started'",
     "mongo:stop": "docker-compose down"
-    },
+  },
   "devDependencies": {
     "concurrently": "^9.2.1"
   }
