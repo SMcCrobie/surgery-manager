@@ -5,6 +5,7 @@
     "server": "cd server && npm start",
     "client": "cd client && npm run dev",
     "mongo:start": "docker-compose up -d mongodb && echo 'MongoDB started'",
+    "mongo:wipe": "docker-compose down && docker volume rm surgerymanager_mongodb_data",
     "mongo:stop": "docker-compose down",
     "seeder": "cd server && node surgery-seeder.js"
   },
