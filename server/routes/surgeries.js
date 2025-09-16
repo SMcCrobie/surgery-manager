@@ -69,9 +69,9 @@ router.get('/:id', async (req, res) => {
 router.get('/', async (req, res) => {
     try {
         const surgeries = await Surgery.find({
-            dateTime: { $gte: new Date() }, // Only future surgeries
-            status: { $in: ['scheduled'] } // Could include 'rescheduled' later
-        }).sort({ dateTime: 1 }); // Sort by date ascending
+            dateTime: { $gte: new Date() }, 
+            status: { $in: ['scheduled'] } 
+        }).sort({ dateTime: 1 }); 
         res.json(surgeries);
     } catch (error) {
         res.status(500).json({ error: error.message });
